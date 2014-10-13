@@ -44,7 +44,7 @@ In this section will be mentioned all the people who have contributed to the cre
 * [Nrevo](https://github.com/Nrevo)  
 * [quiuquio](https://github.com/quiuquio)
 
-... toDo
+
 
 ## License
 
