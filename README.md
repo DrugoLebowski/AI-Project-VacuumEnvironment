@@ -1,7 +1,7 @@
 AI-Project-VacuumEnvironment
 ============================
 
-An environment to test a vacuum agent, created for a college college project and based on a problem from "Artificial Intelligence: A Modern Approach" by Stuart Russell and Peter Norvig.
+An environment to test a vacuum agent, created for an university project and based on a problem from "Artificial Intelligence: A Modern Approach" by Stuart Russell and Peter Norvig.
 
 ## Dependencies
 
@@ -43,8 +43,6 @@ In this section will be mentioned all the people who have contributed to the cre
 
 * [Nrevo](https://github.com/Nrevo)  
 * [quiuquio](https://github.com/quiuquio)
-
-
 
 ## License
 
