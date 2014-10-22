@@ -41,8 +41,7 @@ This project is based on [aima-python](https://code.google.com/p/aima-python/) f
 
 In this section will be mentioned all the people who have contributed to the creation of this program (the list will be in alphabetic order):
 
-* [Nrevo](https://github.com/Nrevo)  
-* [quiuquio](https://github.com/quiuquio)
+To do...
 
 ## License
 
