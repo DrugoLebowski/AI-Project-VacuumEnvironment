@@ -1,7 +1,7 @@
 AI-Project-VacuumEnvironment
 ============================
 
-An environment to test a vacuum agent, created for an university project and based on a problem from "Artificial Intelligence: A Modern Approach" by Stuart Russell and Peter Norvig.
+An environment to test a vacuum agent, created for the university project of Prof. Milani's Artificial Intelligence course at Department ofMathematicasandComputer Science, University ofPerugia, and inspired from a problem posed by Stuart Russell and Peter Norvig in the book "Artificial Intelligence: A Modern Approach". 
 
 ## Dependencies
 
@@ -39,10 +39,16 @@ This project is based on [aima-python](https://code.google.com/p/aima-python/) f
 
 ## Contributors
 
-In this section will be mentioned all the people who have contributed to the creation of this program (the list will be in alphabetic order):
+In this section will be mentioned all the people who have contributed to the creation of this program (the list will be in alphabetic order), divided by university department or private groups/people.
 
-To do...
+University of Perugia, Dept. of Maths and Computer Science, AI 2013-2014: 
+Biondi Giulio (student)
+Franzoni Valentina (teaching assistant)
+Milani Alfredo (professor)
+Parcus Robert (student)
+Tracolli Mirco (student, first creation)
+to complete...
 
 ## License
+Creative Common BY-NC-SA: Share Alike, Non Commercial, give Attribution for the credits to the original authors: http://creativecommons.org/licenses/by-nc-sa/2.0/
 
-[The MIT License (MIT)](https://raw.githubusercontent.com/DMIunipg/AI-Project-VacuumEnvironment/master/LICENSE)
