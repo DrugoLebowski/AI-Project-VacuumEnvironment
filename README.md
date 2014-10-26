@@ -42,11 +42,11 @@ This project is based on [aima-python](https://code.google.com/p/aima-python/) f
 In this section will be mentioned all the people who have contributed to the creation of this program (the list will be in alphabetic order), divided by university department or private groups/people.
 
 University of Perugia, Dept. of Maths and Computer Science, AI 2013-2014: 
-Biondi Giulio (student)
-Franzoni Valentina (teaching assistant)
-Milani Alfredo (professor)
-Parcus Robert (student)
-Tracolli Mirco (student, first creation)
+* Biondi Giulio (student)
+* Franzoni Valentina (teaching assistant)
+* Milani Alfredo (professor)
+* Parcus Robert (student)
+* Tracolli Mirco (student, first creation)
 to complete...
 
 ## License
