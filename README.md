@@ -50,5 +50,5 @@ University of Perugia, Dept. of Maths and Computer Science, AI 2013-2014:
 * to complete...
 
 ## License
-Creative Common BY-NC-SA: Share Alike, Non Commercial, give Attribution for the credits to the original authors: http://creativecommons.org/licenses/by-nc-sa/2.0/
+Creative Common BY-NC-SA: Share Alike, Non Commercial, give Attribution for the credits to the original authors: http://creativecommons.org/licenses/by-nc-sa/4.0/
 
