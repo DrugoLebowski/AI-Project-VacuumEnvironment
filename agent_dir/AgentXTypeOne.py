@@ -22,6 +22,9 @@ class AgentXTypeOneClass(Agent):
             4: "NoOp"
         }
 
+        # Last <x> operation
+        self.history_action = []
+
         # Current action
         self.current_action = 4
 
