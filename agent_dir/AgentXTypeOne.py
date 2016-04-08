@@ -22,14 +22,39 @@ class AgentXTypeOneClass(Agent):
             4: "NoOp"
         }
 
-        # Last <x> operation
-        self.history_action = []
+        # Last <x> position
+        self.history_positions = []
 
         # Current action
         self.current_action = 4
 
+        # Last action
+        self.last_action = -1
+
+        # Current position in map
+        self.position = (0, 0)
+
+        # Last action
+        self.last_position = (0, 0)
+
         # NoOp max execution
         self.no_op_max = 10
+
+        def get_coord(action):
+            """
+                Retrieve the normal coordinates and the backtracked one
+
+                Return:
+                    - (tuple): The new position
+            """
+            if action == 0:
+                return self.position[0] - 1, self.position[1]
+            elif action == 1:
+                return self.position[0], self.position[1] - 1
+            elif action == 2:
+                return self.position[0] + 1, self.position[1]
+            elif action == 3:
+                return self.position[0], self.position[1] + 1
 
         def retrieve_most_near_agent(neighbors, on):
             """
@@ -50,7 +75,7 @@ class AgentXTypeOneClass(Agent):
                     for (agent_id, agent_type), pos in neighbors if agent_id != self.id and agent_type == self.name
                     ],
                 # Select axis X if on is equal 'OnX', otherwise select axis Y
-                key=lambda position: position[0] if on == 'OnX' else position[1]
+                key = lambda position: position[0] if on == 'OnX' else position[1]
             )
 
         def decide_action(near_agent_on_x=None, near_agent_on_y=None):
@@ -58,12 +83,22 @@ class AgentXTypeOneClass(Agent):
                 Retrieve the action to make. In first time the agent try to take open a new graph (or tree) branch,
                 if this is not possible then it enter a previously visited branch
 
+                Args:
+                    near_agent_on_x (tuple): The most near agent in the map respect the X axis
+                    near_agent_on_y (tuple): The most near agent in the map respect the Y axis
+
                 Return:
                     (string): the action to make
-
             """
 
-            # TODO: define the logic for decide the action
+            # Default action if no alternative is retrieved
+            for i in range(0, 4):
+                coord = get_coord(i)
+                if coord not in self.history_positions:
+                    self.last_position, self.position = self.position, coord # Updating of position
+                    self.last_action, self.current_action = self.current_action, i # Updating of action
+                    return self.actions[i]
+
             return 'NoOp'
 
         def retrieve_action(neighbors):
@@ -111,8 +146,15 @@ class AgentXTypeOneClass(Agent):
                 return 'NoOp'
 
             if bump == 'Bump':
+                self.history_positions.insert(0, self.position)
+                self.current_action, self.last_action = self.last_action, -1
+                print (self.current_action, self.last_action)
+                self.position, self.last_position = self.last_position, self.position
                 return retrieve_action(neighbors)
             else:
+                del self.history_positions[:]
+                self.history_positions.insert(0, self.last_position)
+                print(self.history_positions, 'Moved')
                 if status == 'Dirty':
                     return 'Suck'
                 else:
@@ -140,13 +182,6 @@ class AgentXTypeOneClass(Agent):
                             - 'NoOp' or 'Noop'
 
             """
-
-            # Save all the position visited by an other agent as personal visiting
-            for (agent_id, agent_type), pos in neighbors:
-                if agent_id != self.id:
-                    self.visited_floor.append((self.position[0] + pos[0], self.position[1] + pos[1]))
-                else:
-                    self.visited_floor.append(self.position)
 
             return make_action(status, bump, neighbors)
 
