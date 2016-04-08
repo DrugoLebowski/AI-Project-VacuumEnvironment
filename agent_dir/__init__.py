@@ -4,4 +4,5 @@ from . DeepBump import DeepBumpClass
 from . EconomicVacuumAgent_EVA01 import EconomicVacuumAgent_EVA01Class
 from . GBAgent24R import GBAgent24RClass
 from . ManhattanAgent import ManhattanAgentClass
-from . Example import ExampleClass
+from .AgentXTypeOne import AgentXTypeOneClass
+from .AgentXTypeTwo import AgentXTypeTwoClass
