@@ -6,3 +6,4 @@ from . GBAgent24R import GBAgent24RClass
 from . ManhattanAgent import ManhattanAgentClass
 from .AgentXTypeOne import AgentXTypeOneClass
 from .AgentXTypeTwo import AgentXTypeTwoClass
+from .AgentXTypeThree import AgentXTypeThreeClass

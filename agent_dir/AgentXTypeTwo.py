@@ -10,7 +10,7 @@ class AgentXTypeTwoClass(Agent):
         # Personalize the identifier of this class.
         # Will be used instead of the class name
         # in neighbours info
-        self.name = 'AgentX'
+        self.name = 'AgentXTwo'
 
         # Actions of the agent
         self.actions = {
