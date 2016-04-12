@@ -58,7 +58,46 @@ class AgentXTypeTwoClass(Agent):
             elif action == 3:
                 return self.position[0] + 1, self.position[1]
 
-        def define_action(neighbors, cloned_pos, near_agent_on_X, near_agent_on_y):
+        def get_rel_coord(action):
+            if action == 0:
+                return 0, 1
+            elif action == 1:
+                return -1, 0
+            elif action == 2:
+                return 0, -1
+            elif action == 3:
+                return 1, 0
+
+        def negated_position(pos):
+            """
+                Retrieve the negated positions to undertake
+
+                Args:
+                    pos (tuple): Position of an agent
+
+                Returns:
+                    (list): The list of negated position
+            """
+            return [(pos[0] + 1, pos[1]), (pos[0], pos[1] + 1), (pos[0], pos[1] - 1), (pos[0] - 1, pos[1]), pos]
+
+        def calculate_negated_position(neighbors):
+            """
+                Calculate the action to undertake in base of position of the other agent:
+                in particular, the move is encouraged to the other agent (not the clone)
+                Args:
+                    cloned_agent_pos (tuple)
+                    agent_on_x_pos (tuple)
+                    agent_on_y_pos (tuple)
+                Return:
+                    (integer)
+            """
+            neg_pos = []
+            for (agent_id, agent_type), pos in neighbors:
+                if self.id != agent_id:
+                    neg_pos += negated_position(pos)
+            return neg_pos
+
+        def define_action(neighbors):
             """
                 Retrieve the action to make. In first time the agent try to take open a new graph (or tree) branch,
                 if this is not possible then it enter a previously visited branch
@@ -67,16 +106,15 @@ class AgentXTypeTwoClass(Agent):
                     (string): the action to make
 
             """
-
+            neg_pos = calculate_negated_position(neighbors)
             for i in range(0, 5):
                 if i < 4:
                     ##
                     # Control if a position is not a wall, an already visited floor
                     # and a visited position by an adversary
 
-                    if (get_coord(i) not in self.walls \
-                                and get_coord(i) not in self.visited_floor \
-                                and get_coord(i) not in self.visited_floor_adv):
+                    if get_coord(i) not in self.walls and get_coord(i) not in self.visited_floor \
+                            and get_coord(i) not in self.visited_floor_adv and get_rel_coord(i) not in neg_pos:
                         # New position
                         self.position = get_coord(i)
 
@@ -96,50 +134,23 @@ class AgentXTypeTwoClass(Agent):
 
                     # Calculate the backtrack action to make
                     action = (action + 2) % 4
+                    temp_old_action = action
+                    temp_old_position = (coord_x, coord_y)
+                    if get_rel_coord(action) not in neg_pos:
+                        # Backtrack position
+                        self.position = get_coord(action)
 
-                    # Backtrack position
-                    self.position = get_coord(action)
+                        # Backtrack action
+                        self.current_action = action
+                        return self.actions[action]
+                    # Stop backtracking
+                    else:
 
-                    # Backtrack action
-                    self.current_action = action
-                    return self.actions[action]
-
-        def retrieve_most_near_agent(neighbors, on):
-            """
-                Retrieve the most near agent with the indication of the axis
-
-                 Args:
-                     neighbors (array)
-                     on (string)
-
-                 Return:
-                     (tuple)
-            """
-            return min(
-                [
-                    (
-                        (agent_id, agent_type), pos
-                    )
-                    for (agent_id, agent_type), pos in neighbors if agent_id != self.id and agent_type == self.name
-                    ],
-                # Select axis X if on is equal 'OnX', otherwise select axis Y
-                key=lambda position: position[0] if on == 'OnX' else position[1]
-            )
-
-        def retrieve_clone(neighbors):
-            """
-                Retrieve the cloned agent
-
-                Args:
-                    neighbors (array)
-
-                Return:
-                    (tuple)
-            """
-            for (agent_id, agent_type), pos in neighbors:
-                if agent_type == self.name and self.id != agent_id:
-                    return (agent_id, agent_type), pos
-            return None
+                        # Reinsert the position in the search path
+                        self.search_tree.insert(0, ((coord_x, coord_y), temp_old_action))
+                        self.position = temp_old_position
+                        self.current_action = temp_old_action
+                        return 'NoOp'
 
         def retrieve_action(neighbors):
             """
@@ -153,15 +164,7 @@ class AgentXTypeTwoClass(Agent):
             """
 
             if neighbors:
-                (near_agent_x_id, near_agent_x_type), near_agent_pos_x = retrieve_most_near_agent(neighbors, "OnX")
-                (near_agent_y_id, near_agent_y_type), near_agent_pos_y = retrieve_most_near_agent(neighbors, "OnY")
-                (cloned_id, cloned_type), cloned_pos = retrieve_clone(neighbors)
-                return define_action(
-                    neighbors,
-                    cloned_pos,
-                    near_agent_pos_x,
-                    near_agent_pos_y
-                )
+                return define_action(neighbors)
             else:
                 return 'NoOp'
 
@@ -188,7 +191,7 @@ class AgentXTypeTwoClass(Agent):
                                 - 'NoOp' or 'Noop'
             """
 
-            if self.position[0] == 0 and self.position[0] == 1 and self.search_tree:
+            if self.position[0] == 0 and self.position[1] == 0 and not self.search_tree:
                 return 'NoOp'
 
             if bump == 'Bump':

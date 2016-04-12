@@ -41,7 +41,7 @@ class AgentXTypeOneClass(Agent):
         self.last_position = (0, 0)
 
         # NoOp max execution
-        self.no_op_max = 10
+        self.empty_position_max = 1
 
         def get_coord(action):
             """
@@ -150,8 +150,8 @@ class AgentXTypeOneClass(Agent):
             coord = get_coord(index)  # Coordinate of path
             rel_coord = get_rel_coord(index)  # Relative coord
             neg_pos = calculate_negated_position(cloned_pos, near_agent_on_x, near_agent_on_y)  # Negated positions
-            if (coord not in self.history_positions \
-                    and rel_coord not in neg_pos) or rel_coord not in neg_pos:
+            if (coord not in self.history_positions and rel_coord not in neg_pos) \
+                    or rel_coord not in neg_pos:
 
                 # Updating the position
                 self.last_position, self.position = self.position, coord
@@ -204,7 +204,7 @@ class AgentXTypeOneClass(Agent):
                     cloned_pos
                 )
 
-        def make_action(status, bump, neighbors):
+        def program(status, bump, neighbors):
             """
                 Select the action to execute
 
@@ -227,44 +227,20 @@ class AgentXTypeOneClass(Agent):
                                 - 'NoOp' or 'Noop'
             """
 
-            if self.no_op_max == 0:
+            if self.empty_position_max == 0:
                 return 'NoOp'
 
             if len(self.history_positions) > 10:
                 self.history_positions.pop()
 
-            if bump == 'Bump':
-                self.current_action, self.last_action = self.last_action, -1
-                self.position, self.last_position = self.last_position, self.position
-                return retrieve_action(neighbors)
+            if status == "Dirty":
+                self.empty_position_max += 7
+                return 'Suck'
             else:
-                if status == 'Dirty':
-                    return 'Suck'
-                else:
-                    return retrieve_action(neighbors)
-
-        def program(status, bump, neighbors):
-            """Main function of the Agent.
-
-            Params:
-                status (string): 'Dirty' or 'Clean'
-                bump (string): 'Bump' or 'None'
-                neighbors (list of tuples): [
-                        ( (agent_id, agent_type), (r_x, r_y) ),
-                        ...,
-                        ...
-                    ]
-
-            Returns:
-                 (string): one of these commands:
-                            - 'Suck'
-                            - 'GoNorth'
-                            - 'GoSouth'
-                            - 'GoWest'
-                            - 'GoEast'
-                            - 'NoOp' or 'Noop'
-
-            """
-            return make_action(status, bump, neighbors)
+                self.empty_position_max -= 1
+                if bump == 'Bump':
+                    self.current_action, self.last_action = self.last_action, -1
+                    self.position, self.last_position = self.last_position, self.position
+                return retrieve_action(neighbors)
 
         self.program = program
