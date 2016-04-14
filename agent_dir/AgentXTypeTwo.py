@@ -38,9 +38,6 @@ class AgentXTypeTwoClass(Agent):
         # Current position
         self.position = (0, 0)
 
-        # NoOp max execution
-        self.no_op_max = 10
-
         def get_coord(action):
             """
                 Retrieve the normal coordinates and the backtracked one
@@ -73,31 +70,16 @@ class AgentXTypeTwoClass(Agent):
                     dis_from_other_agent = u.distance(self.position, (self.position[0] + pos[0], self.position[1] + pos[1]))
                     actions = []
                     # If the type of the agent is not equal from this, then calculate the distance
-                    if agent_type != self.name:
-                        if pos[0] < 0:
-                            actions.append(1)  # GoWest
-                        elif pos[0] > 0:
-                            actions.append(3)  # GoEast
+                    if pos[0] < 0:
+                        actions.append(1)  # GoWest
+                    elif pos[0] > 0:
+                        actions.append(3)  # GoEast
 
-                        if pos[1] < 0:
-                            actions.append(2)  # GoSouth
-                        elif pos[1] > 0:
-                            actions.append(0)  # GoNorth
-                        actions.append(random.randint(0, 3))
-                    # Otherwise, we are in the case when the agents are of the same type,
-                    # but one is the clone of the other
-                    else:
-                        if pos[0] < 0:
-                            actions.append(3)  # GoEast
-                        elif pos[0] > 0:
-                            actions.append(1)  # GoWest
-
-                        if pos[1] < 0:
-                            actions.append(0)  # GoNorth
-                        elif pos[1] > 0:
-                            actions.append(2)  # GoSouth
-                        # Enter this branch iff the agent and the clone are in the same position
-                        actions.append(random.randint(0, 3))
+                    if pos[1] < 0:
+                        actions.append(2)  # GoSouth
+                    elif pos[1] > 0:
+                        actions.append(0)  # GoNorth
+                    actions.append(random.randint(0, 3))
                     distances.append((dis_from_other_agent, actions))
 
             def sorter(dis1, dis2):
