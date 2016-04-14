@@ -1,6 +1,7 @@
 from .agents import *
 import scipy.spatial.distance as ds
 
+
 class AgentXTypeTwoClass(Agent):
     def __init__(self, x=2, y=2):
         Agent.__init__(self)
@@ -11,7 +12,7 @@ class AgentXTypeTwoClass(Agent):
         # in neighbours info
         self.name = 'AgentXTwo'
 
-        # Actions of the agent
+        # The possible actions of the agent
         self.actions = {
             0: "GoNorth",
             1: "GoWest",
@@ -20,16 +21,16 @@ class AgentXTypeTwoClass(Agent):
             4: "NoOp"
         }
 
-        # Remember wall
+        # THe list of walls bumped
         self.walls = []
 
-        # Visited floor
+        # The list of the visited position
         self.visited_floor = []
 
-        # Search tree
+        # The search tree
         self.search_tree = [((0, 0), 4)]
 
-        # Visited floor by an adversary
+        # The position visited by an adversary
         self.visited_floor_adv = []
 
         # Current action
@@ -48,64 +49,14 @@ class AgentXTypeTwoClass(Agent):
                 Return:
                     - (tuple): The new position
             """
-            if action == 0:
+            if action == 0:  # GoNorth
                 return self.position[0], self.position[1] + 1
-            elif action == 1:
+            elif action == 1:  # GoWest
                 return self.position[0] - 1, self.position[1]
-            elif action == 2:
+            elif action == 2:  # GoSouth
                 return self.position[0], self.position[1] - 1
-            elif action == 3:
+            elif action == 3:  # GoEast
                 return self.position[0] + 1, self.position[1]
-
-        def get_rel_coord(action):
-            """
-                Retrieve the relative coordinate of another agent
-
-                Args:
-                    action (int): The action to undertake
-
-                Return:
-                    tuple: Coordinate
-            """
-            if action == 0:
-                return 0, 1
-            elif action == 1:
-                return -1, 0
-            elif action == 2:
-                return 0, -1
-            elif action == 3:
-                return 1, 0
-
-        def negated_position(pos):
-            """
-                Retrieve the negated positions to undertake
-
-                Args:
-                    pos (tuple): Position of an agent
-
-                Returns:
-                    (list): The list of negated position
-            """
-            return [(pos[0] + 1, pos[1]), (pos[0], pos[1] + 1), (pos[0], pos[1] - 1), (pos[0] - 1, pos[1]), pos]
-
-        def calculate_negated_position(neighbors):
-            """
-                Calculate the action to undertake in base of position of the other agent:
-                in particular, the move is encouraged to the other agent (not the clone)
-                Args:
-                    neighbors (list): The list of all the neighbors
-                Return:
-                    (integer)
-            """
-            neg_pos = []
-            for (agent_id, agent_type), pos in neighbors:
-                if self.id != agent_id:
-                    ##
-                    # Calculate the negated position if and only if the agent type is different respect this agent type,
-                    # and if and only if the agent position is different from the clone relative position
-                    if self.name != agent_type or (self.name == agent_type and pos[0] != 0 and pos[1] != 0):
-                        neg_pos += negated_position(pos)
-            return neg_pos
 
         def distance_from_other_agents(neighbors):
             """
@@ -132,17 +83,19 @@ class AgentXTypeTwoClass(Agent):
                             actions.append(2)  # GoSouth
                         elif pos[1] > 0:
                             actions.append(0)  # GoNorth
+                        else:
+                            actions.append(random.randint(0, 3))
                     # Otherwise, we are in the case when the agents are of the same type,
                     # but one is the clone of the other
                     else:
                         if pos[0] < 0:
-                            actions.append(3)  # GoWest
+                            actions.append(3)  # GoEast
                         elif pos[0] > 0:
-                            actions.append(1)  # GoEast
+                            actions.append(1)  # GoWest
                         elif pos[1] < 0:
-                            actions.append(0)  # GoSouth
+                            actions.append(0)  # GoNorth
                         elif pos[1] > 0:
-                            actions.append(2)  # GoNorth
+                            actions.append(2)  # GoSouth
                         # Enter this branch iff the agent and the clone are in the same position
                         else:
                             actions.append(random.randint(0, 3))
@@ -169,13 +122,12 @@ class AgentXTypeTwoClass(Agent):
                     (string): the action to make
             """
 
-            def decide(action, neg_pos):
+            def decide(action):
                 """
                     Control if the action is possible
 
                     Args:
                         action (int): The action to undertake
-                        neg_pos (list): The position in the map that an agent cannot undertake
 
                     Return:
                         (string) The action to make
@@ -183,7 +135,7 @@ class AgentXTypeTwoClass(Agent):
                 """
                 coord = get_coord(action)
                 if coord not in self.walls and coord not in self.visited_floor \
-                        and coord not in self.visited_floor_adv and get_rel_coord(action) not in neg_pos:
+                        and coord not in self.visited_floor_adv:
                     # New position
                     self.position = coord
 
@@ -197,24 +149,23 @@ class AgentXTypeTwoClass(Agent):
                 else:
                     return None
 
-            neg_pos = calculate_negated_position(neighbors)
             dis_other_agents = distance_from_other_agents(neighbors)
             for dis, actions in dis_other_agents:
                 # Firstly try the actions calculated with heuristic
                 for i in actions:
-                    action = decide(i, neg_pos)
+                    action = decide(i)
                     if action:
                         return action
 
-            # In this second step, the agent try to take one of the four action (if it's possible)
+            # In this second stage, the agent try to take one of the four action (if it's possible)
             for i in range(0, 4):
-                action = decide(i, neg_pos)
+                action = decide(i)
                 if action:
                     return action
             ##
-            # ===========================
-            #        Backtracking
-            # ===========================
+            # ====================================================
+            #        Backtracking when there aren't action to make
+            # ====================================================
             if not self.search_tree:
                 return 'NoOp'
 
@@ -224,29 +175,25 @@ class AgentXTypeTwoClass(Agent):
             # Calculate the backtrack action to make
             action = (action + 2) % 4
 
-            if get_coord(action) not in neg_pos:
-                # Remove the first element of search tree
-                self.search_tree.pop(0)
+            # Remove the first element of search tree
+            self.search_tree.pop(0)
 
-                # Backtrack position
-                self.position = get_coord(action)
+            # Backtrack position
+            self.position = get_coord(action)
 
-                # Backtrack action
-                self.current_action = action
-                return self.actions[action]
-            # Stop backtracking
-            else:
-                return 'NoOp'
+            # Backtrack action
+            self.current_action = action
+            return self.actions[action]
 
         def retrieve_action(neighbors):
             """
                 Retrieve an action to make
 
                 Args:
-                    neighbors (array)
+                    neighbors (array): The list of the neighbors
 
                 Return:
-                    (string)
+                    (string): The action to make
             """
 
             if neighbors:
@@ -277,9 +224,11 @@ class AgentXTypeTwoClass(Agent):
                                 - 'NoOp' or 'Noop'
             """
 
+            # If the search tree is empty, then the agent have finished the visit
             if not self.search_tree:
                 return 'NoOp'
 
+            # Bumped the wall
             if bump == 'Bump':
                 # Extract the position from the search tree 'cause it can't accessed anymore
                 if self.search_tree:
@@ -287,13 +236,12 @@ class AgentXTypeTwoClass(Agent):
 
                 self.walls.append(self.position)
                 self.position = get_coord((self.current_action + 2) % 4)
-                return retrieve_action(neighbors)
-            else:
-                # If the position is dirty, then suck
-                if status == 'Dirty':
-                    return 'Suck'
-                else:
-                    return retrieve_action(neighbors)
+            # Otherwise check if the position is dirty
+            elif status == 'Dirty':
+                return 'Suck'
+
+            # If the agent have bumped the wall or the position is empty, then retrieve the action to make
+            return retrieve_action(neighbors)
 
         def program(status, bump, neighbors):
             """Main function of the Agent.
