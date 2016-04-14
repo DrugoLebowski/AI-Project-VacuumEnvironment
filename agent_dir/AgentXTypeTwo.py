@@ -1,6 +1,5 @@
 from .agents import *
-import scipy.spatial.distance as ds
-
+import utils as u
 
 class AgentXTypeTwoClass(Agent):
     def __init__(self, x=2, y=2):
@@ -10,7 +9,7 @@ class AgentXTypeTwoClass(Agent):
         # Personalize the identifier of this class.
         # Will be used instead of the class name
         # in neighbours info
-        self.name = 'AgentXTwo'
+        self.name = 'AgentXTypeTwo'
 
         # The possible actions of the agent
         self.actions = {
@@ -71,7 +70,7 @@ class AgentXTypeTwoClass(Agent):
             distances = []
             for (agent_id, agent_type), pos in neighbors:
                 if self.id != agent_id:
-                    dis_from_other_agent = ds.euclidean(self.position, (self.position[0] + pos[0], self.position[1] + pos[1]))
+                    dis_from_other_agent = u.distance(self.position, (self.position[0] + pos[0], self.position[1] + pos[1]))
                     actions = []
                     # If the type of the agent is not equal from this, then calculate the distance
                     if agent_type != self.name:
@@ -79,12 +78,12 @@ class AgentXTypeTwoClass(Agent):
                             actions.append(1)  # GoWest
                         elif pos[0] > 0:
                             actions.append(3)  # GoEast
-                        elif pos[1] < 0:
+
+                        if pos[1] < 0:
                             actions.append(2)  # GoSouth
                         elif pos[1] > 0:
                             actions.append(0)  # GoNorth
-                        else:
-                            actions.append(random.randint(0, 3))
+                        actions.append(random.randint(0, 3))
                     # Otherwise, we are in the case when the agents are of the same type,
                     # but one is the clone of the other
                     else:
@@ -92,13 +91,13 @@ class AgentXTypeTwoClass(Agent):
                             actions.append(3)  # GoEast
                         elif pos[0] > 0:
                             actions.append(1)  # GoWest
-                        elif pos[1] < 0:
+
+                        if pos[1] < 0:
                             actions.append(0)  # GoNorth
                         elif pos[1] > 0:
                             actions.append(2)  # GoSouth
                         # Enter this branch iff the agent and the clone are in the same position
-                        else:
-                            actions.append(random.randint(0, 3))
+                        actions.append(random.randint(0, 3))
                     distances.append((dis_from_other_agent, actions))
 
             def sorter(dis1, dis2):
@@ -228,17 +227,18 @@ class AgentXTypeTwoClass(Agent):
             if not self.search_tree:
                 return 'NoOp'
 
+            # If the position is dirty, then suck
+            if status == 'Dirty':
+                return 'Suck'
+
             # Bumped the wall
             if bump == 'Bump':
-                # Extract the position from the search tree 'cause it can't accessed anymore
+                # Extract the position from the search tree because it can't accessed anymore
                 if self.search_tree:
                     self.search_tree.pop(0)
 
                 self.walls.append(self.position)
                 self.position = get_coord((self.current_action + 2) % 4)
-            # Otherwise check if the position is dirty
-            elif status == 'Dirty':
-                return 'Suck'
 
             # If the agent have bumped the wall or the position is empty, then retrieve the action to make
             return retrieve_action(neighbors)

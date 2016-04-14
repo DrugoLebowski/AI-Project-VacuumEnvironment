@@ -1,10 +1,5 @@
 from random import randint
-
 from .agents import *
-import numpy as np
-import math
-import scipy.spatial.distance as ds
-
 
 class AgentXTypeOneClass(Agent):
     def __init__(self, x=2, y=2):
@@ -14,7 +9,7 @@ class AgentXTypeOneClass(Agent):
         # Personalize the identifier of this class.
         # Will be used instead of the class name
         # in neighbours info
-        self.name = 'AgentXOne'
+        self.name = 'AgentXTypeOne'
 
         # Actions of the agent
         self.actions = {
@@ -25,7 +20,7 @@ class AgentXTypeOneClass(Agent):
             4: "NoOp"
         }
 
-        # Last <x> position
+        # Last 7 position
         self.history_positions = [(0, 0)]
 
         # Current action
@@ -43,6 +38,9 @@ class AgentXTypeOneClass(Agent):
         # NoOp max execution
         self.empty_position_max = 1
 
+        # If the agent have sucked or not in the last iteration
+        self.sucked = False
+
         def get_coord(action):
             """
                 Retrieve the normal coordinates and the backtracked one
@@ -50,13 +48,13 @@ class AgentXTypeOneClass(Agent):
                 Return:
                     - (tuple): The new position
             """
-            if action == 0:
+            if action == 0:    # GoNorth
                 return self.position[0], self.position[1] + 1
-            elif action == 1:
+            elif action == 1:  # GoWest
                 return self.position[0] - 1, self.position[1]
-            elif action == 2:
+            elif action == 2:  # GoSouth
                 return self.position[0], self.position[1] - 1
-            elif action == 3:
+            elif action == 3:  # GoEast
                 return self.position[0] + 1, self.position[1]
 
         def get_rel_coord(action):
@@ -66,36 +64,14 @@ class AgentXTypeOneClass(Agent):
                 Return:
                     - (tuple): The new position
             """
-            if action == 0:
+            if action == 0:    # GoNorth
                 return 0, 1
-            elif action == 1:
+            elif action == 1:  # GoWest
                 return -1, 0
-            elif action == 2:
+            elif action == 2:  # GoSouth
                 return 0, -1
-            elif action == 3:
+            elif action == 3:  # GoEast
                 return 1, 0
-
-        def retrieve_most_near_agent(neighbors, on):
-            """
-                Retrieve the most near agent with the indication of the axis
-
-                 Args:
-                     neighbors (array)
-                     on (string)
-
-                 Return:
-                     (tuple)
-            """
-            return min(
-                [
-                    (
-                        (agent_id, agent_type), pos
-                    )
-                    for (agent_id, agent_type), pos in neighbors if agent_id != self.id and agent_type == self.name
-                    ],
-                # Select axis X if on is equal 'OnX', otherwise select axis Y
-                key=lambda position: position[0] if on == 'OnX' else position[1]
-            )
 
         def negated_position(pos):
             """
@@ -109,37 +85,33 @@ class AgentXTypeOneClass(Agent):
             """
             return [(pos[0] + 1, pos[1]), (pos[0], pos[1] + 1), (pos[0], pos[1] - 1), (pos[0] - 1, pos[1]), pos]
 
-        def calculate_negated_position(cloned_agent_pos, agent_on_x_pos=None, agent_on_y_pos=None):
+        def calculate_negated_position(neighbors):
             """
                 Calculate the action to undertake in base of position of the other agent:
                 in particular, the move is encouraged to the other agent (not the clone)
 
                 Args:
-                    cloned_agent_pos (tuple)
-                    agent_on_x_pos (tuple)
-                    agent_on_y_pos (tuple)
-
+                    neighbors (list): The list of all the neighbors
                 Return:
                     (integer)
             """
             neg_pos = []
-            neg_pos += negated_position(cloned_agent_pos)
-            if agent_on_x_pos:
-                neg_pos += negated_position(agent_on_x_pos)
-            if agent_on_y_pos:
-                neg_pos += negated_position(agent_on_y_pos)
+            for (agent_id, agent_type), pos in neighbors:
+                if self.id != agent_id:
+                    ##
+                    # Calculate the negated position if and only if the agent type is different respect this agent type,
+                    # and if and only if the agent position is different from the clone relative position
+                    if self.name != agent_type or (self.name == agent_type and pos[0] != 0 and pos[1] != 0):
+                        neg_pos += negated_position(pos)
+            return neg_pos
 
-            return negated_position(cloned_agent_pos)
-
-        def decide_action(near_agent_on_x=None, near_agent_on_y=None, cloned_pos=None):
+        def decide_action(neighbors):
             """
                 Retrieve the action to make. In first time the agent try to take open a new graph (or tree) branch,
                 if this is not possible then it enter a previously visited branch
 
                 Args:
-                    near_agent_on_x (tuple): The most near agent in the map respect the X axis
-                    near_agent_on_y (tuple): The most near agent in the map respect the Y axis
-                    cloned_pos (tuple): Position of the cloned agent
+                    neighbors (list): The list of the neighbors
 
                 Return:
                     (string): the action to undertake
@@ -149,60 +121,23 @@ class AgentXTypeOneClass(Agent):
             index = randint(0, 3)  # Action
             coord = get_coord(index)  # Coordinate of path
             rel_coord = get_rel_coord(index)  # Relative coord
-            neg_pos = calculate_negated_position(cloned_pos, near_agent_on_x, near_agent_on_y)  # Negated positions
+            neg_pos = calculate_negated_position(neighbors)  # Negated positions
             if (coord not in self.history_positions and rel_coord not in neg_pos) \
                     or rel_coord not in neg_pos:
 
                 # Updating the position
                 self.last_position, self.position = self.position, coord
+
+                # Insert the position in the history
                 self.history_positions.insert(0, self.position)
 
                 # Updating the action
                 self.last_action, self.current_action = self.current_action, index
+
+                # Set sucked as False because the agent have bumped on the wall, or entered in a position already
+                # cleaned or have encountered another agent
+                self.sucked = False
                 return self.actions[index]
-            return 'NoOp'
-
-        def retrieve_clone(neighbors):
-            """
-                Retrieve the cloned agent
-
-                Args:
-                    neighbors (array)
-
-                Return:
-                    (tuple)
-            """
-            for (agent_id, agent_type), pos in neighbors:
-                if agent_type == self.name and agent_id != self.id:
-                    return (agent_id, agent_type), pos
-            return None
-
-        def retrieve_action(neighbors=None):
-            """
-                Retrieve an action to undertake
-
-                Args:
-                    neighbors (array)
-
-                Return:
-                    (string)
-            """
-
-            if not neighbors:
-                return decide_action()
-            else:
-                # Retrieve of the most near agents
-                (agent_id_on_x, agent_type_on_x), near_agent_on_x = retrieve_most_near_agent(neighbors, 'OnX')
-                (agent_id_on_y, agent_type_on_y), near_agent_on_y = retrieve_most_near_agent(neighbors, 'OnY')
-
-                # Retrieve the cloned agent
-                (cloned_id, cloned_type), cloned_pos = retrieve_clone(neighbors)
-
-                return decide_action(
-                    near_agent_on_x if agent_type_on_x != cloned_type else None,
-                    near_agent_on_y if agent_type_on_y != cloned_type else None,
-                    cloned_pos
-                )
 
         def program(status, bump, neighbors):
             """
@@ -227,20 +162,35 @@ class AgentXTypeOneClass(Agent):
                                 - 'NoOp' or 'Noop'
             """
 
+            # If the agent have
             if self.empty_position_max == 0:
                 return 'NoOp'
 
-            if len(self.history_positions) > 10:
+            # Limit the memory
+            if len(self.history_positions) > 7:
                 self.history_positions.pop()
 
+            # If the position is Dirty, then suck
             if status == "Dirty":
-                self.empty_position_max += 7
+                self.empty_position_max += 6
+                self.sucked = True
                 return 'Suck'
-            else:
-                self.empty_position_max -= 1
-                if bump == 'Bump':
-                    self.current_action, self.last_action = self.last_action, -1
-                    self.position, self.last_position = self.last_position, self.position
-                return retrieve_action(neighbors)
+
+            # Otherwise is happened another thing to agent, like bump or the entering of a cleaned position
+            self.empty_position_max -= 1
+            if bump == 'Bump':
+
+                # Restoring of the old action
+                self.current_action, self.last_action = self.last_action, -1
+
+                # Restoring of the old position
+                self.position, self.last_position = self.last_position, self.position
+                return decide_action(neighbors if neighbors else [])
+            elif not self.sucked:
+                return decide_action(neighbors if neighbors else [])
+
+            # Moving on the direction
+            self.sucked = False
+            return self.actions[self.current_action]
 
         self.program = program
