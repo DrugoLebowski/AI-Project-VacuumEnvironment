@@ -42,6 +42,9 @@ class AgentXTypeTwoClass(Agent):
             """
                 Retrieve the normal coordinates and the backtracked one
 
+                Args: 
+                    - action (int): The action to make
+
                 Return:
                     - (tuple): The new position
             """
@@ -69,7 +72,7 @@ class AgentXTypeTwoClass(Agent):
                 if self.id != agent_id:
                     dis_from_other_agent = u.distance(self.position, (self.position[0] + pos[0], self.position[1] + pos[1]))
                     actions = []
-                    # If the type of the agent is not equal from this, then calculate the distance
+                    
                     if pos[0] < 0:
                         actions.append(1)  # GoWest
                     elif pos[0] > 0:
